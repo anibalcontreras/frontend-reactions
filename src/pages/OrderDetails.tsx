@@ -152,17 +152,19 @@ const OrderDetails: React.FC = () => {
 
           {/* Si ya está calificado, mostrar mensaje de agradecimiento */}
           {order.is_rated && (
-            <p className="text-green-500 font-semibold mt-4">
-              Ya has calificado a este proveedor.
+            <p className="text-blue-500 font-semibold mt-4">
+              La órden ya ha sido calificada
             </p>
           )}
 
-          <button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-4"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Cancelar Orden
-          </button>
+          {order.status === "in_progress" && (
+            <button
+              className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-4"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Cancelar Orden
+            </button>
+          )}
         </div>
       ) : (
         <p>Cargando detalles de la orden...</p>

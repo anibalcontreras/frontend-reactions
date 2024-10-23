@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import OrderDetailButton from "../components/OrderDetailButton";
+import RepeatOrderModal from "../components/RepeatOrderModal"; // Importar el modal
+import axios from "axios";
 
 interface Order {
   id: number;
@@ -20,6 +22,11 @@ interface Order {
   total_price: number;
 }
 
+interface Recipient {
+  id: number;
+  username: string;
+}
+
 const statusMapping: { [key: string]: string } = {
   pending: "Pendiente",
   in_progress: "En progreso",
@@ -32,7 +39,14 @@ const ApplicantDashboard: React.FC = () => {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [noCurrentOrders, setNoCurrentOrders] = useState<Order[]>([]);
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [completedOrders, setCompletedOrders] = useState<Order | null>(null);
+  const [selectedRecipient, setSelectedRecipient] = useState<string | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para el modal
 
   // Fetch current orders
   useEffect(() => {
@@ -69,9 +83,9 @@ const ApplicantDashboard: React.FC = () => {
     fetchOrders();
   }, []);
 
-  // Fetch no current orders
+  // Fetch completed orders and recipients
   useEffect(() => {
-    const fetchNoCurrentOrders = async () => {
+    const fetchCompletedOrders = async () => {
       try {
         const token = localStorage.getItem("access_token");
         if (!token) {
@@ -90,31 +104,138 @@ const ApplicantDashboard: React.FC = () => {
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch no current orders");
+          throw new Error("Failed to fetch completed orders");
         }
 
         const data = await response.json();
-        setNoCurrentOrders(data);
+        if (data.length > 0) {
+          setCompletedOrders(data[data.length - 1]);
+          setNoCurrentOrders(data); // Guardar todas las órdenes pasadas
+        }
       } catch (err) {
-        setError("Error fetching no current orders");
-        console.error("Error fetching no current orders:", err);
+        setError("Error fetching completed orders");
+        console.error("Error fetching completed orders:", err);
       }
     };
 
-    fetchNoCurrentOrders();
+    const fetchRecipients = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
+        const response = await axios.get(
+          "http://localhost:8000/api/recipients/",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setRecipients(response.data);
+      } catch (err) {
+        setError("Error fetching recipients");
+        console.error("Error fetching recipients:", err);
+      }
+    };
+
+    fetchCompletedOrders();
+    fetchRecipients();
   }, []);
+
+  // Duplicar el último pedido completado con un recipient aleatorio
+  const openRepeatOrderModal = () => {
+    if (!completedOrders || recipients.length === 0) return;
+
+    // Seleccionar un recipient aleatorio
+    const randomRecipient =
+      recipients[Math.floor(Math.random() * recipients.length)];
+    setSelectedRecipient(randomRecipient.username);
+
+    // Abrir el modal
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmRepeatOrder = async () => {
+    if (!completedOrders || !selectedRecipient) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    // Obtener el recipient seleccionado
+    const recipient = recipients.find((r) => r.username === selectedRecipient);
+
+    if (!recipient) {
+      console.error("No recipient selected");
+      return;
+    }
+
+    try {
+      // Crear una nueva orden con los mismos servicios del último pedido completado, pero con recipient aleatorio
+      const response = await axios.post(
+        "http://localhost:8000/api/orders/",
+        {
+          services: completedOrders.items.map((item) => ({
+            service_id: item.service,
+            quantity: item.quantity,
+          })),
+          recipient_id: recipient.id, // Asignar el nuevo recipient
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Orden duplicada con éxito:", response.data);
+      setIsModalOpen(false);
+      navigate("/applicant-dashboard"); // Actualizar el dashboard
+      window.location.reload(); // Recargar la página
+    } catch (err) {
+      console.error("Error al duplicar la orden:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      {/* Botón para solicitar un nuevo servicio */}
-      <div className="mb-12">
+      <div className="mb-12 flex space-x-4">
         <button
           className="bg-primary-base text-white py-4 px-6 rounded-lg text-lg font-bold hover:bg-primary-blue transition duration-200"
           onClick={() => navigate("/new-service")}
         >
           Solicitar Nuevo Servicio
         </button>
+
+        {completedOrders && (
+          <button
+            className="bg-primary-base text-white py-4 px-6 rounded-lg text-lg font-bold hover:bg-primary-blue transition duration-200"
+            onClick={openRepeatOrderModal} // Abrir modal de confirmación
+          >
+            Repetir Pedido
+          </button>
+        )}
       </div>
+
+      {/* Modal de confirmación */}
+      <RepeatOrderModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmRepeatOrder}
+        orderDetails={{
+          services: completedOrders
+            ? completedOrders.items.map((item) => ({
+                service_name: item.service_name,
+                quantity: item.quantity,
+              }))
+            : [],
+          recipient: selectedRecipient || "",
+        }}
+      />
 
       <div className="w-full max-w-6xl flex justify-between">
         {/* Órdenes en camino a la izquierda */}
@@ -209,8 +330,8 @@ const ApplicantDashboard: React.FC = () => {
             </div>
           ) : (
             <p>
-              Este es tu primer pedido! Si llegas a 5, el precio total va por
-              nuestra cuenta!
+              Aún no se completan tus solicitudes! Si llegas a 5, el precio
+              total va por nuestra cuenta!
             </p>
           )}
         </div>
