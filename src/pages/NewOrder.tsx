@@ -20,7 +20,6 @@ interface Recipient {
   username: string;
 }
 
-// Función para decodificar el token JWT y extraer el payload
 const decodeToken = (token: string) => {
   try {
     const base64Url = token.split(".")[1];
@@ -35,7 +34,7 @@ const decodeToken = (token: string) => {
         .join("")
     );
 
-    return JSON.parse(jsonPayload); // Retorna el payload del token
+    return JSON.parse(jsonPayload);
   } catch (error) {
     console.error("Error decoding token:", error);
     return null;
@@ -49,16 +48,15 @@ const NewOrder: React.FC = () => {
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>(
     []
   );
-  const [recipients, setRecipients] = useState<Recipient[]>([]); // Estado para almacenar recipients
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selectedRecipient, setSelectedRecipient] = useState<number | null>(
     null
   ); // Estado para almacenar el recipient seleccionado
   const [totalPrice, setTotalPrice] = useState(0);
   const [budget, setBudget] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [isNextOrderFree, setIsNextOrderFree] = useState(false); // Para manejar el pedido gratis
+  const [isNextOrderFree, setIsNextOrderFree] = useState(false);
 
-  // Fetch services, user info (including budget), and recipients
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -67,7 +65,6 @@ const NewOrder: React.FC = () => {
           throw new Error("No token found");
         }
 
-        // Decodificar el token para obtener el user_id
         const decodedToken = decodeToken(token);
         if (!decodedToken || !decodedToken.user_id) {
           throw new Error("Invalid token or user_id not found");
@@ -75,7 +72,6 @@ const NewOrder: React.FC = () => {
 
         const userId = decodedToken.user_id;
 
-        // Fetch available services
         const servicesResponse = await axios.get(
           "http://localhost:8000/api/services/"
         );
@@ -88,7 +84,6 @@ const NewOrder: React.FC = () => {
           }))
         );
 
-        // Fetch the user's budget and order_count using the userId from the token
         const userResponse = await axios.get(
           `http://localhost:8000/api/users/${userId}/`,
           {
@@ -104,7 +99,6 @@ const NewOrder: React.FC = () => {
         const nextOrderFree = (orderCount + 1) % 5 === 0;
         setIsNextOrderFree(nextOrderFree);
 
-        // Fetch recipients
         const recipientsResponse = await axios.get(
           "http://localhost:8000/api/recipients/",
           {
@@ -122,7 +116,6 @@ const NewOrder: React.FC = () => {
     fetchData();
   }, []);
 
-  // Calculate total price based on selected services
   useEffect(() => {
     let total = selectedServices.reduce((acc, selectedService) => {
       const service = services.find((s) => s.id === selectedService.service_id);

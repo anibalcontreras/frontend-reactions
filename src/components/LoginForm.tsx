@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
-  userType: "applicant" | "supplier"; // Tipo de usuario (solicitante o proveedor)
+  userType: "applicant" | "supplier";
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ userType }) => {

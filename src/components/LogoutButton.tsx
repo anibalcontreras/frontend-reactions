@@ -7,9 +7,7 @@ const LogoutButton: React.FC = () => {
   const handleLogout = () => {
     // Eliminar el token de autenticación y cualquier otro dato del localStorage
     localStorage.removeItem("access_token");
-    localStorage.removeItem("user_type"); // Si tienes otros datos del usuario, puedes eliminarlos también
-
-    // Redirigir al root ("/")
+    localStorage.removeItem("user_type");
     navigate("/");
   };
 

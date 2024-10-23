@@ -13,20 +13,17 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   onConfirm,
 }) => {
   const navigate = useNavigate();
-
-  // Obtener el tipo de usuario desde el local storage (assumo que lo tienes almacenado)
-  const userType = localStorage.getItem("user_type"); // Puede ser 'applicant' o 'supplier'
+  const userType = localStorage.getItem("user_type");
 
   if (!isOpen) return null;
 
   const handleCancel = () => {
-    // Redirigir dependiendo del tipo de usuario
     if (userType === "applicant") {
       navigate("/applicant-dashboard");
     } else if (userType === "supplier") {
       navigate("/supplier-dashboard");
     } else {
-      onClose(); // Si no se encuentra el user_type, solo cerrar el modal
+      onClose();
     }
   };
 
@@ -41,7 +38,7 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
         <div className="flex justify-end space-x-4">
           <button
             className="bg-gray-300 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-400"
-            onClick={handleCancel} // Redirigir en base al tipo de usuario
+            onClick={handleCancel}
           >
             Cancelar
           </button>

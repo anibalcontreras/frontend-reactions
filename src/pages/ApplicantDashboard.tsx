@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import OrderDetailButton from "../components/OrderDetailButton";
-import RepeatOrderModal from "../components/RepeatOrderModal"; // Importar el modal
+import RepeatOrderModal from "../components/RepeatOrderModal";
+import LogoutButton from "../components/LogoutButton";
 import axios from "axios";
 
 interface Order {
@@ -153,7 +154,6 @@ const ApplicantDashboard: React.FC = () => {
     fetchOrders();
   }, []);
 
-  // Fetch completed orders and recipients
   useEffect(() => {
     const fetchCompletedOrders = async () => {
       try {
@@ -253,7 +253,7 @@ const ApplicantDashboard: React.FC = () => {
             service_id: item.service,
             quantity: item.quantity,
           })),
-          recipient_id: recipient.id, // Asignar el nuevo recipient
+          recipient_id: recipient.id,
         },
         {
           headers: {
@@ -264,7 +264,7 @@ const ApplicantDashboard: React.FC = () => {
 
       console.log("Orden duplicada con éxito:", response.data);
       setIsModalOpen(false);
-      navigate("/applicant-dashboard"); // Actualizar el dashboard
+      navigate("/applicant-dashboard");
       window.location.reload(); // Recargar la página
     } catch (err) {
       console.error("Error al duplicar la orden:", err);
@@ -276,7 +276,6 @@ const ApplicantDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
       <div className="mb-12 flex space-x-4">
-        {/* Mostrar el botón llamativo si el order_count es múltiplo de 5 */}
         {isNextOrderFree ? (
           <button
             className="bg-yellow-500 text-black py-4 px-6 rounded-lg text-lg font-bold hover:bg-yellow-600 transition duration-200"
@@ -293,10 +292,11 @@ const ApplicantDashboard: React.FC = () => {
           </button>
         )}
 
+        {/* Si hay ordenes completadas o hay una orden en current*/}
         {completedOrders && (
           <button
             className="bg-primary-base text-primary-text py-4 px-6 rounded-lg text-lg font-bold hover:bg-primary-hover transition duration-200"
-            onClick={openRepeatOrderModal} // Abrir modal de confirmación
+            onClick={openRepeatOrderModal}
           >
             Repetir Pedido
           </button>
@@ -319,10 +319,12 @@ const ApplicantDashboard: React.FC = () => {
         }}
       />
 
-      <div className="w-full max-w-6xl flex justify-between">
+      <div className="w-full max-w-4xl flex justify-center space-x-8">
         {/* Órdenes en camino a la izquierda */}
-        <div className="w-1/2 pr-4">
-          <h2 className="text-2xl font-bold mb-4">Órdenes en Progreso</h2>
+        <div className="w-1/2">
+          <h2 className="text-2xl font-bold mb-4 text-center">
+            Órdenes en Progreso
+          </h2>
           {error && <p className="text-red-500">{error}</p>}
 
           {orders.length > 0 ? (
@@ -338,16 +340,6 @@ const ApplicantDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  {/* <p className="text-gray-600 mb-2">
-                    Tiempo estimado de llegada: {order.time_estimated} minutos
-                  </p>
-                  <p className="text-gray-600 mb-2">
-                    Proveedor: {order.supplier_username}
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Creado el: {new Date(order.created_at).toLocaleString()}
-                  </p> */}
-
                   <h4 className="font-bold mb-2">Servicios solicitados:</h4>
                   <ul className="list-disc list-inside">
                     {order.items.map((item) => (
@@ -356,20 +348,20 @@ const ApplicantDashboard: React.FC = () => {
                       </li>
                     ))}
                   </ul>
-
-                  {/* Botón para ver más detalles */}
                   <OrderDetailButton orderId={order.id} />
                 </div>
               ))}
             </div>
           ) : (
-            <p>No hay órdenes vigentes.</p>
+            <p className="text-center">No hay órdenes vigentes.</p>
           )}
         </div>
 
         {/* Órdenes pasadas a la derecha */}
-        <div className="w-1/2 pl-4">
-          <h2 className="text-2xl font-bold mb-4">Órdenes pasadas</h2>
+        <div className="w-1/2">
+          <h2 className="text-2xl font-bold mb-4 text-center">
+            Órdenes pasadas
+          </h2>
           {noCurrentOrders.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
               {noCurrentOrders.map((order) => (
@@ -383,19 +375,9 @@ const ApplicantDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  {/* <p className="text-gray-600 mb-2">
-                    Tiempo estimado de llegada: {order.time_estimated} minutos
-                  </p>
-                  <p className="text-gray-600 mb-2">
-                    Proveedor: {order.supplier_username}
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Creado el: {new Date(order.created_at).toLocaleString()}
-                  </p> */}
                   <p className="text-gray-600 mb-4">
                     Precio total: ${order.total_price}
                   </p>
-
                   <h4 className="font-bold mb-2">Servicios solicitados:</h4>
                   <ul className="list-disc list-inside">
                     {order.items.map((item) => (
@@ -404,16 +386,17 @@ const ApplicantDashboard: React.FC = () => {
                       </li>
                     ))}
                   </ul>
-
-                  {/* Botón para ver más detalles */}
                   <OrderDetailButton orderId={order.id} />
                 </div>
               ))}
             </div>
           ) : (
-            <p>No hay órdenes pasadas.</p>
+            <p className="text-center">No hay órdenes pasadas.</p>
           )}
         </div>
+      </div>
+      <div className="flex justify-center mt-10">
+        <LogoutButton />
       </div>
     </div>
   );

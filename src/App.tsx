@@ -1,5 +1,3 @@
-// src/App.tsx
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -7,7 +5,7 @@ import ApplicantLogin from "./pages/ApplicantLogin";
 import SupplierLogin from "./pages/SupplierLogin";
 import ApplicantDashboard from "./pages/ApplicantDashboard";
 import SupplierDashboard from "./pages/SupplierDashboard";
-import NotFound from "./components/NotFound"; // Importa la página 404
+import NotFound from "./components/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NewOrder from "./pages/NewOrder";
 import OrderDetails from "./pages/OrderDetails";
@@ -27,7 +25,7 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute
               component={ApplicantDashboard}
-              userTypes={["applicant"]} // Ajustado a 'userTypes'
+              userTypes={["applicant"]}
             />
           }
         />
@@ -35,7 +33,7 @@ const App: React.FC = () => {
           path="/new-service"
           element={
             <ProtectedRoute component={NewOrder} userTypes={["applicant"]} />
-          } // Ajustado a 'userTypes'
+          }
         />
 
         <Route
@@ -44,7 +42,7 @@ const App: React.FC = () => {
             <ProtectedRoute
               component={SupplierDashboard}
               userTypes={["supplier"]}
-            /> // Ajustado a 'userTypes'
+            />
           }
         />
 
@@ -55,7 +53,7 @@ const App: React.FC = () => {
             <ProtectedRoute
               component={OrderDetails}
               userTypes={["applicant", "supplier"]}
-            /> // Ahora permite ambos tipos de usuario
+            />
           }
         />
 

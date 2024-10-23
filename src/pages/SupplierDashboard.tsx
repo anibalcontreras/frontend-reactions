@@ -1,5 +1,3 @@
-// src/pages/SupplierDashboard.tsx
-
 import React, { useEffect, useState } from "react";
 import OrderDetailButton from "../components/OrderDetailButton";
 import LogoutButton from "../components/LogoutButton";
@@ -69,7 +67,6 @@ const SupplierDashboard: React.FC = () => {
     fetchInProgressOrders();
   }, []);
 
-  // Fetch canceled or completed orders
   useEffect(() => {
     const fetchPastOrders = async () => {
       try {
@@ -125,16 +122,6 @@ const SupplierDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  {/* <p className="text-gray-600 mb-2">
-                    Tiempo estimado de llegada: {order.time_estimated} minutos
-                  </p>
-                  <p className="text-gray-600 mb-2">
-                    Solicitante: {order.applicant_username}
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Creado el: {new Date(order.created_at).toLocaleString()}
-                  </p> */}
-
                   <h4 className="font-bold mb-2">Servicios solicitados:</h4>
                   <ul className="list-disc list-inside">
                     {order.items.map((item) => (
@@ -170,19 +157,6 @@ const SupplierDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  {/* <p className="text-gray-600 mb-2">
-                    Solicitante: {order.applicant_username}
-                  </p>
-                  <p className="text-gray-600 mb-2">
-                    Tiempo estimado de llegada: {order.time_estimated} minutos
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Creado el: {new Date(order.created_at).toLocaleString()}
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Precio total: ${order.total_price}
-                  </p> */}
-
                   <h4 className="font-bold mb-2">Servicios solicitados:</h4>
                   <ul className="list-disc list-inside">
                     {order.items.map((item) => (
