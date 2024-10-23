@@ -103,6 +103,32 @@ const OrderDetails: React.FC = () => {
     }
   };
 
+  // Manejar completado de orden (solo para suppliers)
+  const handleCompleteOrder = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) throw new Error("No authentication token found");
+
+      const response = await fetch(
+        `http://localhost:8000/api/orders/${id}/complete_order/`,
+        {
+          method: "PUT", // El método correcto es PUT
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to complete order");
+
+      // Redirigir al dashboard después de completar
+      navigate("/supplier-dashboard");
+    } catch (err) {
+      setError("Error completing order");
+    }
+  };
+
   if (error) return <div>{error}</div>;
 
   return (
@@ -157,12 +183,23 @@ const OrderDetails: React.FC = () => {
             </p>
           )}
 
+          {/* Botón para cancelar orden (para suppliers y applicants) */}
           {order.status === "in_progress" && (
             <button
               className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-4"
               onClick={() => setIsModalOpen(true)}
             >
               Cancelar Orden
+            </button>
+          )}
+
+          {/* Botón para completar la orden (solo para suppliers y si está en progreso) */}
+          {userType === "supplier" && order.status === "in_progress" && (
+            <button
+              className="bg-primary-base text-white py-2 px-4 rounded-lg hover:bg-primary-hover mt-4 ml-4"
+              onClick={handleCompleteOrder}
+            >
+              Completar Orden
             </button>
           )}
         </div>

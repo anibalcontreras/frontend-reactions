@@ -1,5 +1,4 @@
 import React from "react";
-import BackButton from "./BackButton";
 
 interface RepeatOrderModalProps {
   isOpen: boolean;
@@ -45,13 +44,13 @@ const RepeatOrderModal: React.FC<RepeatOrderModalProps> = ({
 
         <div className="flex justify-end space-x-4">
           <button
-            className="bg-gray-200 text-white py-2 px-4 rounded-lg hover:bg-primary-base"
+            className={`bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-primary-base hover:text-white transition duration-200`}
             onClick={onClose} // Cerrar el modal
           >
             Cancelar
           </button>
           <button
-            className="bg-primary-base text-white py-2 px-4 rounded-lg hover:bg-primary-blue"
+            className="bg-primary-base text-white py-2 px-4 rounded-lg hover:bg-primary-hover"
             onClick={onConfirm} // Confirmar el pedido
           >
             Confirmar

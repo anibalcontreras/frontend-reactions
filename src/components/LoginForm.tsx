@@ -1,5 +1,3 @@
-// src/components/LoginForm.tsx
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -68,48 +66,50 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-8 border border-gray-300 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        {userType === "applicant" ? "Login Solicitante" : "Login Proveedor"}
-      </h2>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      <form onSubmit={handleLogin}>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700">
-            Correo Electrónico
-          </label>
-          <input
-            type="email"
-            id="email"
-            className="w-full p-2 border border-gray-300 rounded mt-1"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-gray-700">
-            Contraseña
-          </label>
-          <input
-            type="password"
-            id="password"
-            className="w-full p-2 border border-gray-300 rounded mt-1"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className={`w-full bg-primary-base text-white py-2 px-4 rounded hover:bg-primary-blue transition duration-200 ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={loading}
-        >
-          {loading ? "Cargando..." : "Iniciar Sesión"}
-        </button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-lg bg-white p-10 border border-gray-300 rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold mb-8 text-center">
+          {userType === "applicant" ? "Login Solicitante" : "Login Proveedor"}
+        </h2>
+        {error && <div className="text-red-500 mb-6 text-center">{error}</div>}
+        <form onSubmit={handleLogin}>
+          <div className="mb-6">
+            <label htmlFor="email" className="block text-gray-700 text-lg">
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              id="email"
+              className="w-full max-w-xl p-3 border border-gray-300 rounded-lg mt-2 text-lg"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-8">
+            <label htmlFor="password" className="block text-gray-700 text-lg">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              className="w-full max-w-xl p-3 border border-gray-300 rounded-lg mt-2 text-lg"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className={`w-full bg-primary-base text-white py-3 px-6 rounded-lg hover:bg-primary-hover transition duration-300 ease-in-out transform hover:scale-105 text-lg font-bold ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
+          >
+            {loading ? "Cargando..." : "Iniciar Sesión"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

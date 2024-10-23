@@ -20,6 +20,28 @@ interface Recipient {
   username: string;
 }
 
+// Función para decodificar el token JWT y extraer el payload
+const decodeToken = (token: string) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+
+    return JSON.parse(jsonPayload); // Retorna el payload del token
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
+
 const NewOrder: React.FC = () => {
   const navigate = useNavigate();
 
@@ -34,6 +56,7 @@ const NewOrder: React.FC = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [budget, setBudget] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isNextOrderFree, setIsNextOrderFree] = useState(false); // Para manejar el pedido gratis
 
   // Fetch services, user info (including budget), and recipients
   useEffect(() => {
@@ -43,6 +66,14 @@ const NewOrder: React.FC = () => {
         if (!token) {
           throw new Error("No token found");
         }
+
+        // Decodificar el token para obtener el user_id
+        const decodedToken = decodeToken(token);
+        if (!decodedToken || !decodedToken.user_id) {
+          throw new Error("Invalid token or user_id not found");
+        }
+
+        const userId = decodedToken.user_id;
 
         // Fetch available services
         const servicesResponse = await axios.get(
@@ -57,9 +88,9 @@ const NewOrder: React.FC = () => {
           }))
         );
 
-        // Fetch the user's budget
+        // Fetch the user's budget and order_count using the userId from the token
         const userResponse = await axios.get(
-          "http://localhost:8000/api/users/1/",
+          `http://localhost:8000/api/users/${userId}/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -67,6 +98,11 @@ const NewOrder: React.FC = () => {
           }
         );
         setBudget(userResponse.data.budget);
+
+        // Verificar si el próximo pedido es gratuito
+        const orderCount = userResponse.data.order_count;
+        const nextOrderFree = (orderCount + 1) % 5 === 0;
+        setIsNextOrderFree(nextOrderFree);
 
         // Fetch recipients
         const recipientsResponse = await axios.get(
@@ -88,13 +124,18 @@ const NewOrder: React.FC = () => {
 
   // Calculate total price based on selected services
   useEffect(() => {
-    const total = selectedServices.reduce((acc, selectedService) => {
+    let total = selectedServices.reduce((acc, selectedService) => {
       const service = services.find((s) => s.id === selectedService.service_id);
       return service ? acc + service.price * selectedService.quantity : acc;
     }, 0);
 
+    // Si el próximo pedido es gratuito, establecer el total en 0
+    if (isNextOrderFree) {
+      total = 0;
+    }
+
     setTotalPrice(total);
-  }, [selectedServices, services]);
+  }, [selectedServices, services, isNextOrderFree]);
 
   const handleIncrement = (serviceId: number) => {
     const service = services.find((s) => s.id === serviceId);
@@ -246,14 +287,15 @@ const NewOrder: React.FC = () => {
         <div className="mt-4 text-center">
           <p className="text-lg font-bold">Total: ${totalPrice}</p>
           <p className="text-lg">
-            Presupuesto disponible: ${budget - totalPrice}
+            Presupuesto disponible: $
+            {isNextOrderFree ? budget : budget - totalPrice}
           </p>
         </div>
 
         <div className="flex justify-between mt-8">
           <BackButton />
           <button
-            className="bg-primary-base text-white py-3 px-6 rounded-lg font-bold text-lg hover:bg-primary-blue transition duration-200"
+            className="bg-primary-base text-white py-3 px-6 rounded-lg font-bold text-lg hover:bg-primary-hover transition duration-200"
             onClick={createOrder}
           >
             Crear Pedido

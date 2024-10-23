@@ -27,6 +27,16 @@ interface Recipient {
   username: string;
 }
 
+interface User {
+  id: number;
+  username: string;
+  user_type: string;
+  budget: number;
+  order_count: number;
+  rating: number | null;
+  rating_count: number;
+}
+
 const statusMapping: { [key: string]: string } = {
   pending: "Pendiente",
   in_progress: "En progreso",
@@ -34,9 +44,32 @@ const statusMapping: { [key: string]: string } = {
   cancelled: "Cancelada",
 };
 
+// Función para decodificar el token JWT
+const decodeToken = (token: string) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
+
 const ApplicantDashboard: React.FC = () => {
   const navigate = useNavigate();
 
+  const [user, setUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [noCurrentOrders, setNoCurrentOrders] = useState<Order[]>([]);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
@@ -47,6 +80,43 @@ const ApplicantDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para el modal
+
+  // Fetch user details
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
+        // Decodifica el token para obtener el user_id
+        const decodedToken = decodeToken(token);
+        if (!decodedToken || !decodedToken.user_id) {
+          throw new Error("Invalid token or user_id not found");
+        }
+
+        const userId = decodedToken.user_id;
+
+        // Hacer la solicitud con el user_id extraído del token
+        const response = await axios.get(
+          `http://localhost:8000/api/users/${userId}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setUser(response.data);
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+        setError("Error fetching user details");
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
 
   // Fetch current orders
   useEffect(() => {
@@ -201,19 +271,31 @@ const ApplicantDashboard: React.FC = () => {
     }
   };
 
+  const isNextOrderFree = user?.order_count && (user.order_count + 1) % 5 === 0;
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
       <div className="mb-12 flex space-x-4">
-        <button
-          className="bg-primary-base text-white py-4 px-6 rounded-lg text-lg font-bold hover:bg-primary-blue transition duration-200"
-          onClick={() => navigate("/new-service")}
-        >
-          Solicitar Nuevo Servicio
-        </button>
+        {/* Mostrar el botón llamativo si el order_count es múltiplo de 5 */}
+        {isNextOrderFree ? (
+          <button
+            className="bg-yellow-500 text-black py-4 px-6 rounded-lg text-lg font-bold hover:bg-yellow-600 transition duration-200"
+            onClick={() => navigate("/new-service")}
+          >
+            ¡Solicitud Gratis!
+          </button>
+        ) : (
+          <button
+            className="bg-primary-base text-primary-text py-4 px-6 rounded-lg text-lg font-bold hover:bg-primary-hover transition duration-200"
+            onClick={() => navigate("/new-service")}
+          >
+            Solicitar Nuevo Servicio
+          </button>
+        )}
 
         {completedOrders && (
           <button
-            className="bg-primary-base text-white py-4 px-6 rounded-lg text-lg font-bold hover:bg-primary-blue transition duration-200"
+            className="bg-primary-base text-primary-text py-4 px-6 rounded-lg text-lg font-bold hover:bg-primary-hover transition duration-200"
             onClick={openRepeatOrderModal} // Abrir modal de confirmación
           >
             Repetir Pedido
@@ -256,7 +338,7 @@ const ApplicantDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  <p className="text-gray-600 mb-2">
+                  {/* <p className="text-gray-600 mb-2">
                     Tiempo estimado de llegada: {order.time_estimated} minutos
                   </p>
                   <p className="text-gray-600 mb-2">
@@ -264,7 +346,7 @@ const ApplicantDashboard: React.FC = () => {
                   </p>
                   <p className="text-gray-600 mb-4">
                     Creado el: {new Date(order.created_at).toLocaleString()}
-                  </p>
+                  </p> */}
 
                   <h4 className="font-bold mb-2">Servicios solicitados:</h4>
                   <ul className="list-disc list-inside">
@@ -301,7 +383,7 @@ const ApplicantDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  <p className="text-gray-600 mb-2">
+                  {/* <p className="text-gray-600 mb-2">
                     Tiempo estimado de llegada: {order.time_estimated} minutos
                   </p>
                   <p className="text-gray-600 mb-2">
@@ -309,7 +391,7 @@ const ApplicantDashboard: React.FC = () => {
                   </p>
                   <p className="text-gray-600 mb-4">
                     Creado el: {new Date(order.created_at).toLocaleString()}
-                  </p>
+                  </p> */}
                   <p className="text-gray-600 mb-4">
                     Precio total: ${order.total_price}
                   </p>
@@ -329,10 +411,7 @@ const ApplicantDashboard: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p>
-              Aún no se completan tus solicitudes! Si llegas a 5, el precio
-              total va por nuestra cuenta!
-            </p>
+            <p>No hay órdenes pasadas.</p>
           )}
         </div>
       </div>

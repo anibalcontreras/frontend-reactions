@@ -124,7 +124,7 @@ const SupplierDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  <p className="text-gray-600 mb-2">
+                  {/* <p className="text-gray-600 mb-2">
                     Tiempo estimado de llegada: {order.time_estimated} minutos
                   </p>
                   <p className="text-gray-600 mb-2">
@@ -132,7 +132,7 @@ const SupplierDashboard: React.FC = () => {
                   </p>
                   <p className="text-gray-600 mb-4">
                     Creado el: {new Date(order.created_at).toLocaleString()}
-                  </p>
+                  </p> */}
 
                   <h4 className="font-bold mb-2">Servicios solicitados:</h4>
                   <ul className="list-disc list-inside">
@@ -169,7 +169,7 @@ const SupplierDashboard: React.FC = () => {
                       {statusMapping[order.status] || order.status}
                     </span>
                   </h3>
-                  <p className="text-gray-600 mb-2">
+                  {/* <p className="text-gray-600 mb-2">
                     Solicitante: {order.applicant_username}
                   </p>
                   <p className="text-gray-600 mb-2">
@@ -180,7 +180,7 @@ const SupplierDashboard: React.FC = () => {
                   </p>
                   <p className="text-gray-600 mb-4">
                     Precio total: ${order.total_price}
-                  </p>
+                  </p> */}
 
                   <h4 className="font-bold mb-2">Servicios solicitados:</h4>
                   <ul className="list-disc list-inside">
