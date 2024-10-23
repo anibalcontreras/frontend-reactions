@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import StarRating from "../components/StarRating";
+// import StarRating from "../components/StarRating";
 import BackButton from "../components/BackButton";
 import CancelOrderModal from "../components/CancelOrderModal";
 
@@ -8,7 +8,7 @@ const OrderDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [ratingSuccess, setRatingSuccess] = useState<string | null>(null);
+  // const [ratingSuccess, setRatingSuccess] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -45,33 +45,51 @@ const OrderDetails: React.FC = () => {
     fetchOrderDetails();
   }, [id]);
 
-  // Enviar calificación
-  const submitRating = async (rating: number) => {
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) throw new Error("No authentication token found");
+  // Comprobar si la orden existe antes de intentar acceder a sus propiedades
+  if (!order) {
+    return <div>No se encontraron detalles del pedido.</div>;
+  }
 
-      const response = await fetch(
-        `http://localhost:8000/api/orders/${id}/rate_supplier/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ rating }),
-        }
-      );
+  // Formatear la fecha solo si la orden tiene la propiedad created_at
+  const formattedDate = order.created_at
+    ? new Date(order.created_at).toLocaleString("es-ES", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false, // Formato de 24 horas
+      })
+    : "Fecha no disponible";
 
-      if (!response.ok) throw new Error("Failed to submit rating");
+  // // Enviar calificación
+  // const submitRating = async (rating: number) => {
+  //   try {
+  //     const token = localStorage.getItem("access_token");
+  //     if (!token) throw new Error("No authentication token found");
 
-      setRatingSuccess("¡Gracias por tu calificación!");
-      // Actualizar estado para que no se vuelva a mostrar la calificación
-      setOrder((prevOrder: any) => ({ ...prevOrder, is_rated: true }));
-    } catch (err) {
-      setError("Error submitting rating");
-    }
-  };
+  //     const response = await fetch(
+  //       `http://localhost:8000/api/orders/${id}/rate_supplier/`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({ rating }),
+  //       }
+  //     );
+
+  //     if (!response.ok) throw new Error("Failed to submit rating");
+
+  //     setRatingSuccess("¡Gracias por tu calificación!");
+  //     // Actualizar estado para que no se vuelva a mostrar la calificación
+  //     setOrder((prevOrder: any) => ({ ...prevOrder, is_rated: true }));
+  //   } catch (err) {
+  //     setError("Error submitting rating");
+  //   }
+  // };
 
   // Manejar cancelación
   const handleCancelOrder = async () => {
@@ -138,19 +156,20 @@ const OrderDetails: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4">
             Detalles de la Orden #{order.id}
           </h2>
-          <p className="text-gray-600 mb-2">
+          {/* <p className="text-gray-600 mb-2">
             Solicitante: {order.applicant_username}
-          </p>
+          </p> */}
           <p className="text-gray-600 mb-2">
             Proveedor: {order.supplier_username}
           </p>
-          <p className="text-gray-600 mb-2">
+          <p className="text-gray-600 mb-2">Fecha: {formattedDate}</p>
+          {/* <p className="text-gray-600 mb-2">
             Estado:{" "}
             {order.status === "completed" ? "Completada" : "En progreso"}
-          </p>
-          <p className="text-gray-600 mb-2">
+          </p> */}
+          {/* <p className="text-gray-600 mb-2">
             Tiempo estimado: {order.time_estimated} minutos
-          </p>
+          </p> */}
           <p className="text-gray-600 mb-4">
             Precio total: ${order.total_price}
           </p>
@@ -164,7 +183,7 @@ const OrderDetails: React.FC = () => {
             ))}
           </ul>
 
-          {order.status === "completed" && !order.is_rated && (
+          {/* {order.status === "completed" && !order.is_rated && (
             <>
               <h3 className="text-lg font-bold mt-6">Califica al proveedor</h3>
               <StarRating onRatingSubmit={submitRating} />
@@ -174,14 +193,14 @@ const OrderDetails: React.FC = () => {
                 </p>
               )}
             </>
-          )}
+          )} */}
 
           {/* Si ya está calificado, mostrar mensaje de agradecimiento */}
-          {order.is_rated && (
+          {/* {order.is_rated && (
             <p className="text-blue-500 font-semibold mt-4">
               La órden ya ha sido calificada
             </p>
-          )}
+          )} */}
 
           {/* Botón para cancelar orden (para suppliers y applicants) */}
           {order.status === "in_progress" && (

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import OrderDetailButton from "../components/OrderDetailButton";
+import LogoutButton from "../components/LogoutButton";
 
 interface Order {
   id: number;
@@ -200,6 +201,10 @@ const SupplierDashboard: React.FC = () => {
             <p>No hay órdenes pasadas.</p>
           )}
         </div>
+      </div>
+
+      <div className="flex justify-center mt-10">
+        <LogoutButton />
       </div>
     </div>
   );
